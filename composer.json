@@ -1,0 +1,33 @@
+{
+    "name": "nextcloud/approve_links",
+    "authors": [
+        {
+            "name": "Julien Veyssier",
+            "email": "julien-nc@posteo.net"
+        }
+    ],
+    "require": {
+        "php": "^8.0"
+    },
+	"scripts": {
+        "lint": "find . -name \\*.php -not -path './vendor/*' -print0 | xargs -0 -n1 php -l",
+        "cs:check": "php-cs-fixer fix --dry-run --diff",
+        "cs:fix": "php-cs-fixer fix",
+        "psalm": "psalm.phar --no-cache",
+        "test:unit": "phpunit --config tests/phpunit.xml",
+        "openapi": "generate-spec --verbose --continue-on-error"
+    },
+    "repositories": [
+        {
+            "type": "vcs",
+            "url": "https://github.com/nextcloud/openapi-extractor"
+        }
+    ],
+    "require-dev": {
+        "nextcloud/coding-standard": "^1.1",
+        "psalm/phar": "^5.16",
+        "nextcloud/ocp": "dev-master",
+        "phpunit/phpunit": "^9.5",
+        "nextcloud/openapi-extractor": "dev-main"
+    }
+}
