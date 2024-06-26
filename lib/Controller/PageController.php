@@ -11,17 +11,14 @@
 
 namespace OCA\ApproveLinks\Controller;
 
-use OCA\ApproveLinks\AppInfo\Application;
 use OCA\ApproveLinks\Service\ApiService;
 use OCP\AppFramework\Controller;
 use OCP\AppFramework\Http;
 use OCP\AppFramework\Http\Attribute\BruteForceProtection;
 use OCP\AppFramework\Http\Attribute\NoCSRFRequired;
 use OCP\AppFramework\Http\Attribute\PublicPage;
-use OCP\AppFramework\Http\DataResponse;
 use OCP\AppFramework\Http\Template\PublicTemplateResponse;
 use OCP\AppFramework\Http\TemplateResponse;
-use OCP\IConfig;
 
 use OCP\IRequest;
 
@@ -31,7 +28,6 @@ class PageController extends Controller {
 		string   $appName,
 		IRequest $request,
 		private ApiService $apiService,
-		private IConfig $config,
 		private ?string $userId
 	) {
 		parent::__construct($appName, $request);

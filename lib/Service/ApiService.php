@@ -18,9 +18,9 @@ use OCA\ApproveLinks\AppInfo\Application;
 use OCA\ApproveLinks\SignatureException;
 use OCP\Http\Client\IClient;
 use OCP\Http\Client\IClientService;
-use OCP\IConfig;
 use OCP\IL10N;
 use OCP\IURLGenerator;
+use OCP\Security\ICrypto;
 use Psr\Log\LoggerInterface;
 use Throwable;
 
@@ -31,7 +31,7 @@ class ApiService {
 		string $appName,
 		private LoggerInterface $logger,
 		private IL10N $l10n,
-		private IConfig $config,
+		private ICrypto $crypto,
 		private IUrlGenerator $urlGenerator,
 		IClientService $clientService
 	) {
@@ -45,8 +45,7 @@ class ApiService {
 	 * @return string
 	 */
 	public function getSignature(string $approveCallbackUri, string $rejectCallbackUri, string $description): string {
-		$instanceSecret = $this->config->getSystemValueString('secret');
-		return hash('sha256',$approveCallbackUri . $rejectCallbackUri . $description . $instanceSecret);
+		return hash('sha256', $this->crypto->calculateHMAC($approveCallbackUri . $rejectCallbackUri . $description));
 	}
 
 	/**

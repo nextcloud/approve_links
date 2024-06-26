@@ -21,29 +21,35 @@
 
 <template>
 	<div class="approve-link-page">
-		<h2>
-			{{ t('approve_links', 'Approval') }}
-		</h2>
-		<div class="description">
-			{{ description }}
-		</div>
-		<div class="buttons">
-			<NcButton
-				class="button"
-				type="error"
-				@click="onReject">
-				<template #icon>
-					<CloseIcon :size="24" />
-				</template>
-			</NcButton>
-			<NcButton
-				class="button"
-				type="success"
-				@click="onApprove">
-				<template #icon>
-					<CheckIcon :size="24" />
-				</template>
-			</NcButton>
+		<div class="content">
+			<h2>
+				{{ t('approve_links', 'Approval') }}
+			</h2>
+			<div class="description">
+				{{ description }}
+			</div>
+			<div class="buttons">
+				<NcButton
+					class="button"
+					type="error"
+					@click="onReject">
+					<template #icon>
+						<NcLoadingIcon v-if="rejectLoading" :size="24" />
+						<CloseIcon v-else :size="24" />
+					</template>
+					{{ t('approve_links', 'Reject') }}
+				</NcButton>
+				<NcButton
+					class="button"
+					type="success"
+					@click="onApprove">
+					<template #icon>
+						<NcLoadingIcon v-if="approveLoading" :size="24" />
+						<CheckIcon v-else :size="24" />
+					</template>
+					{{ t('approve_links', 'Approve') }}
+				</NcButton>
+			</div>
 		</div>
 	</div>
 </template>
@@ -52,7 +58,7 @@
 import CloseIcon from 'vue-material-design-icons/Close.vue'
 import CheckIcon from 'vue-material-design-icons/Check.vue'
 
-// import NcLoadingIcon from '@nextcloud/vue/dist/Components/NcLoadingIcon.js'
+import NcLoadingIcon from '@nextcloud/vue/dist/Components/NcLoadingIcon.js'
 import NcButton from '@nextcloud/vue/dist/Components/NcButton.js'
 
 import { generateOcsUrl } from '@nextcloud/router'
@@ -63,7 +69,7 @@ export default {
 	name: 'ApprovePage',
 
 	components: {
-		// NcLoadingIcon,
+		NcLoadingIcon,
 		NcButton,
 		CheckIcon,
 		CloseIcon,
@@ -75,6 +81,8 @@ export default {
 	data() {
 		return {
 			urlParams: new URLSearchParams(window.location.search),
+			approveLoading: false,
+			rejectLoading: false,
 		}
 	},
 
@@ -90,6 +98,7 @@ export default {
 
 	methods: {
 		onApprove() {
+			this.approveLoading = true
 			const params = {
 				approveCallbackUri: this.approveCallbackUri,
 				rejectCallbackUri: this.rejectCallbackUri,
@@ -100,15 +109,18 @@ export default {
 			axios.post(url, params).then(response => {
 				showSuccess(t('approve_links', 'Your approval completed successfully'))
 			}).catch(error => {
-				console.debug('APPROVE_LINKS approve error', error)
+				console.error(error)
 				if (error.response.status === 400) {
 					showError(t('approve_links', 'The request to the approve callback URI failed'))
 				} else if (error.response.status === 401) {
 					showError(t('approve_links', 'Bad signature'))
 				}
+			}).then(() => {
+				this.approveLoading = false
 			})
 		},
 		onReject() {
+			this.rejectLoading = true
 			const params = {
 				approveCallbackUri: this.approveCallbackUri,
 				rejectCallbackUri: this.rejectCallbackUri,
@@ -119,12 +131,14 @@ export default {
 			axios.post(url, params).then(response => {
 				showSuccess(t('approve_links', 'Your rejection completed successfully'))
 			}).catch(error => {
-				console.debug('APPROVE_LINKS reject error', error.response.status)
+				console.error(error)
 				if (error.response.status === 400) {
 					showError(t('approve_links', 'The request to the reject callback URI failed'))
 				} else if (error.response.status === 401) {
 					showError(t('approve_links', 'Bad signature'))
 				}
+			}).then(() => {
+				this.rejectLoading = false
 			})
 		},
 	},
@@ -134,6 +148,30 @@ export default {
 <style scoped lang="scss">
 .approve-link-page {
 	width: 100%;
-	padding: 12px;
+	height: 100%;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+
+	.content {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 24px;
+
+		background: var(--color-main-background);
+		padding: 24px;
+		border-radius: var(--border-radius-large);
+
+		h2 {
+			margin: 12px 0 12px 0 !important;
+		}
+
+		.buttons {
+			display: flex;
+			gap: 8px;
+		}
+	}
 }
 </style>
