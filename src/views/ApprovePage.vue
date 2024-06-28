@@ -25,30 +25,44 @@
 			<h2>
 				{{ t('approve_links', 'Approval') }}
 			</h2>
-			<div class="description">
-				{{ description }}
+			<div v-if="success" class="success">
+				{{ t('approve_links', 'Your approval was registered.') }}
+				<NcButton
+					class="button"
+					type="secondary"
+					@click="onClose">
+					<template #icon>
+						<CloseIcon :size="24" />
+					</template>
+					{{ t('approve_links', 'Close') }}
+				</NcButton>
 			</div>
-			<div class="buttons">
-				<NcButton
-					class="button"
-					type="error"
-					@click="onReject">
-					<template #icon>
-						<NcLoadingIcon v-if="rejectLoading" :size="24" />
-						<CloseIcon v-else :size="24" />
-					</template>
-					{{ t('approve_links', 'Reject') }}
-				</NcButton>
-				<NcButton
-					class="button"
-					type="success"
-					@click="onApprove">
-					<template #icon>
-						<NcLoadingIcon v-if="approveLoading" :size="24" />
-						<CheckIcon v-else :size="24" />
-					</template>
-					{{ t('approve_links', 'Approve') }}
-				</NcButton>
+			<div v-else class="approval">
+				<div class="description">
+					{{ description }}
+				</div>
+				<div class="buttons">
+					<NcButton
+						class="button"
+						type="error"
+						@click="onReject">
+						<template #icon>
+							<NcLoadingIcon v-if="rejectLoading" :size="24" />
+							<CloseIcon v-else :size="24" />
+						</template>
+						{{ t('approve_links', 'Reject') }}
+					</NcButton>
+					<NcButton
+						class="button"
+						type="success"
+						@click="onApprove">
+						<template #icon>
+							<NcLoadingIcon v-if="approveLoading" :size="24" />
+							<CheckIcon v-else :size="24" />
+						</template>
+						{{ t('approve_links', 'Approve') }}
+					</NcButton>
+				</div>
 			</div>
 		</div>
 	</div>
@@ -83,6 +97,7 @@ export default {
 			urlParams: new URLSearchParams(window.location.search),
 			approveLoading: false,
 			rejectLoading: false,
+			success: false,
 		}
 	},
 
@@ -97,6 +112,9 @@ export default {
 	},
 
 	methods: {
+		onClose() {
+			window.close()
+		},
 		onApprove() {
 			this.approveLoading = true
 			const params = {
@@ -107,7 +125,8 @@ export default {
 			}
 			const url = generateOcsUrl('/apps/approve_links/api/v1/approve')
 			axios.post(url, params).then(response => {
-				showSuccess(t('approve_links', 'Your approval completed successfully'))
+				showSuccess(t('approve_links', 'Thank you for your decision.'))
+				this.success = true
 			}).catch(error => {
 				console.error(error)
 				if (error.response.status === 400) {
@@ -129,7 +148,8 @@ export default {
 			}
 			const url = generateOcsUrl('/apps/approve_links/api/v1/reject')
 			axios.post(url, params).then(response => {
-				showSuccess(t('approve_links', 'Your rejection completed successfully'))
+				showSuccess(t('approve_links', 'Thank you for your decision.'))
+				this.success = true
 			}).catch(error => {
 				console.error(error)
 				if (error.response.status === 400) {
@@ -163,6 +183,13 @@ export default {
 		background: var(--color-main-background);
 		padding: 24px;
 		border-radius: var(--border-radius-large);
+
+		.approval, .success {
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+			gap: 24px;
+		}
 
 		h2 {
 			margin: 12px 0 12px 0 !important;
