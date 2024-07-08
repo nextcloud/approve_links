@@ -18,6 +18,8 @@ class Application extends App implements IBootstrap {
 
 	public const APP_ID = 'approve_links';
 
+	public const MAX_GENERATED_LINK_LENGTH = 2000;
+
 	public function __construct(array $urlParams = []) {
 		parent::__construct(self::APP_ID, $urlParams);
 	}

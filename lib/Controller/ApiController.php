@@ -12,6 +12,7 @@
 namespace OCA\ApproveLinks\Controller;
 
 use Exception;
+use OCA\ApproveLinks\AppInfo\Application;
 use OCA\ApproveLinks\Service\ApiService;
 use OCA\ApproveLinks\Settings\Admin;
 use OCA\ApproveLinks\SignatureException;
@@ -47,6 +48,12 @@ class ApiController extends OCSController {
 	#[AuthorizedAdminSetting(settings: Admin::class)]
 	public function generateLink(string $approveCallbackUri, string $rejectCallbackUri, string $description): DataResponse {
 		$link = $this->apiService->generateLink($approveCallbackUri, $rejectCallbackUri, $description);
+		if (strlen($link) > Application::MAX_GENERATED_LINK_LENGTH) {
+			$responseData = [
+				'error' => 'link_too_long',
+			];
+			return new DataResponse($responseData, Http::STATUS_BAD_REQUEST);
+		}
 		$responseData = [
 			'link' => $link,
 		];
