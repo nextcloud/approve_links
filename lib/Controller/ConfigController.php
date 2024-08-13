@@ -13,11 +13,13 @@ namespace OCA\ApproveLinks\Controller;
 
 use OCA\ApproveLinks\AppInfo\Application;
 use OCP\AppFramework\Controller;
+use OCP\AppFramework\Http\Attribute\OpenAPI;
 use OCP\AppFramework\Http\DataResponse;
 use OCP\IConfig;
 
 use OCP\IRequest;
 
+#[OpenAPI(scope: OpenAPI::SCOPE_IGNORE)]
 class ConfigController extends Controller {
 
 	public function __construct(

@@ -19,17 +19,43 @@
                 "scheme": "bearer"
             }
         },
-        "schemas": {}
+        "schemas": {
+            "OCSMeta": {
+                "type": "object",
+                "required": [
+                    "status",
+                    "statuscode"
+                ],
+                "properties": {
+                    "status": {
+                        "type": "string"
+                    },
+                    "statuscode": {
+                        "type": "integer"
+                    },
+                    "message": {
+                        "type": "string"
+                    },
+                    "totalitems": {
+                        "type": "string"
+                    },
+                    "itemsperpage": {
+                        "type": "string"
+                    }
+                }
+            }
+        }
     },
     "paths": {
-        "/ocs/v2.php/apps/approve_links/api/{apiVersion}/approve": {
+        "/ocs/v2.php/apps/approve_links/api/{apiVersion}/link": {
             "post": {
-                "operationId": "api-approve",
+                "operationId": "api-generate-link",
+                "summary": "Generate a link",
+                "description": "Generate an approval link from the callback URIs and a description.\nThis endpoint requires admin access",
                 "tags": [
                     "api"
                 ],
                 "security": [
-                    {},
                     {
                         "bearer_auth": []
                     },
@@ -37,7 +63,48 @@
                         "basic_auth": []
                     }
                 ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "required": [
+                                    "approveCallbackUri",
+                                    "rejectCallbackUri",
+                                    "description"
+                                ],
+                                "properties": {
+                                    "approveCallbackUri": {
+                                        "type": "string",
+                                        "description": "The URI to request on approval"
+                                    },
+                                    "rejectCallbackUri": {
+                                        "type": "string",
+                                        "description": "The URI to request on rejection"
+                                    },
+                                    "description": {
+                                        "type": "string",
+                                        "description": "The approval description"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
                 "parameters": [
+                    {
+                        "name": "apiVersion",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "v1"
+                            ],
+                            "default": "v1"
+                        }
+                    },
                     {
                         "name": "OCS-APIRequest",
                         "in": "header",
@@ -50,6 +117,291 @@
                     }
                 ],
                 "responses": {
+                    "200": {
+                        "description": "The link has been successfully generated",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "required": [
+                                        "ocs"
+                                    ],
+                                    "properties": {
+                                        "ocs": {
+                                            "type": "object",
+                                            "required": [
+                                                "meta",
+                                                "data"
+                                            ],
+                                            "properties": {
+                                                "meta": {
+                                                    "$ref": "#/components/schemas/OCSMeta"
+                                                },
+                                                "data": {
+                                                    "type": "object",
+                                                    "required": [
+                                                        "link"
+                                                    ],
+                                                    "properties": {
+                                                        "link": {
+                                                            "type": "string"
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "The generated link is too long",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "required": [
+                                        "ocs"
+                                    ],
+                                    "properties": {
+                                        "ocs": {
+                                            "type": "object",
+                                            "required": [
+                                                "meta",
+                                                "data"
+                                            ],
+                                            "properties": {
+                                                "meta": {
+                                                    "$ref": "#/components/schemas/OCSMeta"
+                                                },
+                                                "data": {
+                                                    "type": "object",
+                                                    "required": [
+                                                        "error"
+                                                    ],
+                                                    "properties": {
+                                                        "error": {
+                                                            "type": "string"
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/ocs/v2.php/apps/approve_links/api/{apiVersion}/approve": {
+            "post": {
+                "operationId": "api-approve",
+                "summary": "Approve",
+                "description": "Approve to trigger a request to the approve callback URI.",
+                "tags": [
+                    "api"
+                ],
+                "security": [
+                    {},
+                    {
+                        "bearer_auth": []
+                    },
+                    {
+                        "basic_auth": []
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "required": [
+                                    "approveCallbackUri",
+                                    "rejectCallbackUri",
+                                    "description",
+                                    "signature"
+                                ],
+                                "properties": {
+                                    "approveCallbackUri": {
+                                        "type": "string",
+                                        "description": "The URI to request on approval"
+                                    },
+                                    "rejectCallbackUri": {
+                                        "type": "string",
+                                        "description": "The URI to request on rejection"
+                                    },
+                                    "description": {
+                                        "type": "string",
+                                        "description": "The approval description"
+                                    },
+                                    "signature": {
+                                        "type": "string",
+                                        "description": "The approval link signature"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "parameters": [
+                    {
+                        "name": "apiVersion",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "v1"
+                            ],
+                            "default": "v1"
+                        }
+                    },
+                    {
+                        "name": "OCS-APIRequest",
+                        "in": "header",
+                        "description": "Required to be true for the API request to pass",
+                        "required": true,
+                        "schema": {
+                            "type": "boolean",
+                            "default": true
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "The callback URI has been successfully requested",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "required": [
+                                        "ocs"
+                                    ],
+                                    "properties": {
+                                        "ocs": {
+                                            "type": "object",
+                                            "required": [
+                                                "meta",
+                                                "data"
+                                            ],
+                                            "properties": {
+                                                "meta": {
+                                                    "$ref": "#/components/schemas/OCSMeta"
+                                                },
+                                                "data": {
+                                                    "type": "object",
+                                                    "required": [
+                                                        "result"
+                                                    ],
+                                                    "properties": {
+                                                        "result": {
+                                                            "type": "object",
+                                                            "required": [
+                                                                "body"
+                                                            ],
+                                                            "properties": {
+                                                                "body": {
+                                                                    "type": "string"
+                                                                }
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "There was an error while approving",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "required": [
+                                        "ocs"
+                                    ],
+                                    "properties": {
+                                        "ocs": {
+                                            "type": "object",
+                                            "required": [
+                                                "meta",
+                                                "data"
+                                            ],
+                                            "properties": {
+                                                "meta": {
+                                                    "$ref": "#/components/schemas/OCSMeta"
+                                                },
+                                                "data": {
+                                                    "type": "object",
+                                                    "required": [
+                                                        "error",
+                                                        "message"
+                                                    ],
+                                                    "properties": {
+                                                        "error": {
+                                                            "type": "string"
+                                                        },
+                                                        "message": {
+                                                            "type": "string"
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "The signature is incorrect",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "required": [
+                                        "ocs"
+                                    ],
+                                    "properties": {
+                                        "ocs": {
+                                            "type": "object",
+                                            "required": [
+                                                "meta",
+                                                "data"
+                                            ],
+                                            "properties": {
+                                                "meta": {
+                                                    "$ref": "#/components/schemas/OCSMeta"
+                                                },
+                                                "data": {
+                                                    "type": "object",
+                                                    "required": [
+                                                        "error",
+                                                        "message"
+                                                    ],
+                                                    "properties": {
+                                                        "error": {
+                                                            "type": "string"
+                                                        },
+                                                        "message": {
+                                                            "type": "string"
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
                     "500": {
                         "description": "",
                         "content": {
@@ -66,6 +418,8 @@
         "/ocs/v2.php/apps/approve_links/api/{apiVersion}/reject": {
             "post": {
                 "operationId": "api-reject",
+                "summary": "Reject",
+                "description": "Reject to trigger a request to the reject callback URI.",
                 "tags": [
                     "api"
                 ],
@@ -78,7 +432,53 @@
                         "basic_auth": []
                     }
                 ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "required": [
+                                    "approveCallbackUri",
+                                    "rejectCallbackUri",
+                                    "description",
+                                    "signature"
+                                ],
+                                "properties": {
+                                    "approveCallbackUri": {
+                                        "type": "string",
+                                        "description": "The URI to request on approval"
+                                    },
+                                    "rejectCallbackUri": {
+                                        "type": "string",
+                                        "description": "The URI to request on rejection"
+                                    },
+                                    "description": {
+                                        "type": "string",
+                                        "description": "The approval description"
+                                    },
+                                    "signature": {
+                                        "type": "string",
+                                        "description": "The approval link signature"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
                 "parameters": [
+                    {
+                        "name": "apiVersion",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "v1"
+                            ],
+                            "default": "v1"
+                        }
+                    },
                     {
                         "name": "OCS-APIRequest",
                         "in": "header",
@@ -91,6 +491,136 @@
                     }
                 ],
                 "responses": {
+                    "200": {
+                        "description": "The callback URI has been successfully requested",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "required": [
+                                        "ocs"
+                                    ],
+                                    "properties": {
+                                        "ocs": {
+                                            "type": "object",
+                                            "required": [
+                                                "meta",
+                                                "data"
+                                            ],
+                                            "properties": {
+                                                "meta": {
+                                                    "$ref": "#/components/schemas/OCSMeta"
+                                                },
+                                                "data": {
+                                                    "type": "object",
+                                                    "required": [
+                                                        "result"
+                                                    ],
+                                                    "properties": {
+                                                        "result": {
+                                                            "type": "object",
+                                                            "required": [
+                                                                "body"
+                                                            ],
+                                                            "properties": {
+                                                                "body": {
+                                                                    "type": "string"
+                                                                }
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "There was an error while rejecting",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "required": [
+                                        "ocs"
+                                    ],
+                                    "properties": {
+                                        "ocs": {
+                                            "type": "object",
+                                            "required": [
+                                                "meta",
+                                                "data"
+                                            ],
+                                            "properties": {
+                                                "meta": {
+                                                    "$ref": "#/components/schemas/OCSMeta"
+                                                },
+                                                "data": {
+                                                    "type": "object",
+                                                    "required": [
+                                                        "error",
+                                                        "message"
+                                                    ],
+                                                    "properties": {
+                                                        "error": {
+                                                            "type": "string"
+                                                        },
+                                                        "message": {
+                                                            "type": "string"
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "The signature is incorrect",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "required": [
+                                        "ocs"
+                                    ],
+                                    "properties": {
+                                        "ocs": {
+                                            "type": "object",
+                                            "required": [
+                                                "meta",
+                                                "data"
+                                            ],
+                                            "properties": {
+                                                "meta": {
+                                                    "$ref": "#/components/schemas/OCSMeta"
+                                                },
+                                                "data": {
+                                                    "type": "object",
+                                                    "required": [
+                                                        "error",
+                                                        "message"
+                                                    ],
+                                                    "properties": {
+                                                        "error": {
+                                                            "type": "string"
+                                                        },
+                                                        "message": {
+                                                            "type": "string"
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
                     "500": {
                         "description": "",
                         "content": {
