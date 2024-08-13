@@ -10,6 +10,9 @@ You can generate a link with this API endpoint:
 
 POST `/ocs/v2.php/apps/approve_links/api/v1/link`
 
+This endpoint can only be used by users and groups that were authorized in the `Administration priviledges`
+Approve links generation section in the admin settings.
+
 You must provide the following parameters:
 
 * approveCallbackUri: (string, required) The callback URI to request when the `approve` button is clicked
