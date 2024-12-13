@@ -3,7 +3,7 @@
     <id>approve_links</id>
     <name>Approval links</name>
     <summary>Generate approval links</summary>
-    <description><![CDATA[Generate approval links. When they are browsed, approving or rejecting will make a request to a callabck URI.]]></description>
+    <description><![CDATA[Generate approval links. When they are browsed, approving or rejecting will make a request to a callback URI.]]></description>
     <version>1.0.2</version>
     <licence>agpl</licence>
     <author>Julien Veyssier</author>
