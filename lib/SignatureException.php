@@ -1,4 +1,5 @@
 <?php
+
 /**
  * @copyright Copyright (c) 2024 Julien Veyssier <julien-nc@posteo.net>
  *

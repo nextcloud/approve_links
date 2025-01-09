@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Nextcloud - ApproveLinks
  *
@@ -27,10 +28,10 @@ use OCP\IRequest;
 class PageController extends Controller {
 
 	public function __construct(
-		string   $appName,
+		string $appName,
 		IRequest $request,
 		private ApiService $apiService,
-		private ?string $userId
+		private ?string $userId,
 	) {
 		parent::__construct($appName, $request);
 	}

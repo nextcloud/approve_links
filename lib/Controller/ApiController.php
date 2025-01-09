@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Nextcloud - ApproveLinks
  *
@@ -34,7 +35,7 @@ class ApiController extends OCSController {
 		string $appName,
 		IRequest $request,
 		private ApiService $apiService,
-		?string $userId
+		?string $userId,
 	) {
 		parent::__construct($appName, $request);
 	}

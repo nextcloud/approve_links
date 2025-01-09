@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Nextcloud - Approve links
  *
@@ -33,7 +34,7 @@ class ApiService {
 		private IL10N $l10n,
 		private ICrypto $crypto,
 		private IUrlGenerator $urlGenerator,
-		IClientService $clientService
+		IClientService $clientService,
 	) {
 		$this->client = $clientService->newClient();
 	}
@@ -56,7 +57,7 @@ class ApiService {
 	 * @return bool
 	 */
 	public function checkSignature(
-		string $approveCallbackUri, string $rejectCallbackUri, string $description, string $signature
+		string $approveCallbackUri, string $rejectCallbackUri, string $description, string $signature,
 	): bool {
 		return $this->getSignature($approveCallbackUri, $rejectCallbackUri, $description) === $signature;
 	}
@@ -86,7 +87,7 @@ class ApiService {
 	 * @throws Throwable
 	 */
 	public function approve(
-		string $approveCallbackUri, string $rejectCallbackUri, string $description, string $signature
+		string $approveCallbackUri, string $rejectCallbackUri, string $description, string $signature,
 	): array {
 		if (!$this->checkSignature($approveCallbackUri, $rejectCallbackUri, $description, $signature)) {
 			throw new SignatureException();
@@ -104,7 +105,7 @@ class ApiService {
 	 * @throws Throwable
 	 */
 	public function reject(
-		string $approveCallbackUri, string $rejectCallbackUri, string $description, string $signature
+		string $approveCallbackUri, string $rejectCallbackUri, string $description, string $signature,
 	): array {
 		if (!$this->checkSignature($approveCallbackUri, $rejectCallbackUri, $description, $signature)) {
 			throw new SignatureException();
@@ -155,11 +156,11 @@ class ApiService {
 			} else {
 				return ['body' => $body];
 			}
-		} catch (ClientException | ServerException $e) {
+		} catch (ClientException|ServerException $e) {
 			$responseBody = $e->getResponse()->getBody();
 			$this->logger->warning('ApproveLinks API error : ' . $e->getMessage(), ['response_body' => $responseBody, 'app' => Application::APP_ID]);
 			throw $e;
-		} catch (Exception | Throwable $e) {
+		} catch (Exception|Throwable $e) {
 			$this->logger->warning('ApproveLinks API error : ' . $e->getMessage(), ['app' => Application::APP_ID]);
 			throw $e;
 		}
