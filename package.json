@@ -47,7 +47,7 @@
 		"@nextcloud/router": "^3.0.1",
 		"@nextcloud/vue": "^8.2.0",
 		"v-click-outside": "^3.2.0",
-		"vue": "^2.7.12",
+		"vue": "^3.0.0",
 		"vue-material-design-icons": "^5.1.2"
 	},
 	"devDependencies": {
