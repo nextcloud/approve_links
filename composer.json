@@ -17,19 +17,13 @@
         "psalm:update-baseline": "psalm.phar --threads=1 --update-baseline",
         "psalm:update-baseline:force": "psalm.phar --threads=1 --update-baseline --set-baseline=tests/psalm-baseline.xml",
         "test:unit": "phpunit --config tests/phpunit.xml",
-        "openapi": "generate-spec --verbose --continue-on-error"
+        "openapi": "generate-spec --verbose"
     },
-    "repositories": [
-        {
-            "type": "vcs",
-            "url": "https://github.com/nextcloud/openapi-extractor"
-        }
-    ],
     "require-dev": {
         "nextcloud/coding-standard": "^1.1",
         "psalm/phar": "^5.16",
         "nextcloud/ocp": "dev-master",
         "phpunit/phpunit": "^9.5",
-        "nextcloud/openapi-extractor": "dev-main"
+        "nextcloud/openapi-extractor": "^1.6.0"
     }
 }
