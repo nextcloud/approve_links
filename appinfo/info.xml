@@ -1,24 +1,24 @@
 <?xml version="1.0"?>
 <info>
-    <id>approve_links</id>
-    <name>Approval links</name>
-    <summary>Generate approval links</summary>
-    <description><![CDATA[Generate approval links. When they are browsed, approving or rejecting will make a request to a callabck URI.]]></description>
-    <version>1.1.0</version>
-    <licence>agpl</licence>
-    <author>Julien Veyssier</author>
-    <namespace>ApproveLinks</namespace>
-    <documentation>
-        <developer>https://github.com/julien-nc/approve_links</developer>
-    </documentation>
-    <category>integration</category>
-    <website>https://github.com/julien-nc/approve_links</website>
-    <bugs>https://github.com/julien-nc/approve_links/issues</bugs>
-    <screenshot>https://raw.githubusercontent.com/julien-nc/approve_links/main/img/screenshots/screenshot1.jpg</screenshot>
-    <screenshot>https://raw.githubusercontent.com/julien-nc/approve_links/main/img/screenshots/screenshot2.jpg</screenshot>
-    <dependencies>
-        <nextcloud min-version="30" max-version="31"/>
-    </dependencies>
+	<id>approve_links</id>
+	<name>Approval links</name>
+	<summary>Generate approval links</summary>
+	<description><![CDATA[Generate approval links. When they are browsed, approving or rejecting will make a request to a callabck URI.]]></description>
+	<version>1.1.0</version>
+	<licence>agpl</licence>
+	<author>Julien Veyssier</author>
+	<namespace>ApproveLinks</namespace>
+	<documentation>
+		<developer>https://github.com/nextcloud/approve_links</developer>
+	</documentation>
+	<category>integration</category>
+	<website>https://github.com/nextcloud/approve_links</website>
+	<bugs>https://github.com/nextcloud/approve_links/issues</bugs>
+	<screenshot>https://raw.githubusercontent.com/nextcloud/approve_links/main/img/screenshots/screenshot1.jpg</screenshot>
+	<screenshot>https://raw.githubusercontent.com/nextcloud/approve_links/main/img/screenshots/screenshot2.jpg</screenshot>
+	<dependencies>
+		<nextcloud min-version="30" max-version="32"/>
+	</dependencies>
 	<settings>
 		<admin>OCA\ApproveLinks\Settings\Admin</admin>
 	</settings>
