@@ -39,11 +39,22 @@ class PageController extends Controller {
 	#[PublicPage]
 	#[NoCSRFRequired]
 	#[BruteForceProtection(action: 'approvePage')]
-	public function index(string $approveCallbackUri, string $rejectCallbackUri, string $description, string $signature): TemplateResponse {
-		if (!$this->apiService->checkSignature($approveCallbackUri, $rejectCallbackUri, $description, $signature)) {
+	public function index(
+		string $approveCallbackUri, string $rejectCallbackUri, string $description, string $signature, ?string $userId = null,
+	): TemplateResponse {
+		$error = null;
+		if (!$this->apiService->checkSignature($approveCallbackUri, $rejectCallbackUri, $description, $signature, $userId)) {
+			$error = 'Bad signature';
+		}
+		// if the signature is correct but the current user is not authorized
+		if ($error === null && $userId !== null && $userId !== $this->userId) {
+			$error = 'Unauthorized user';
+		}
+
+		if ($error !== null) {
 			$params = [
 				'errors' => [
-					['error' => 'Bad signature'],
+					['error' => $error],
 				],
 			];
 			$response = new TemplateResponse(
@@ -53,11 +64,12 @@ class PageController extends Controller {
 				TemplateResponse::RENDER_AS_ERROR
 			);
 			$response->setStatus(Http::STATUS_UNAUTHORIZED);
-			$response->throttle(['reason' => 'bad signature']);
+			$response->throttle(['reason' => $error]);
 			return $response;
 		}
+
 		$response = new PublicTemplateResponse('approve_links', 'page');
-		//$response->setHeaderDetails($this->trans->t('Enter link password of project %s', [$publicShareInfo['projectid']]));
+		// $response->setHeaderDetails($this->l10n->t('', []));
 		$response->setFooterVisible(false);
 		return $response;
 	}

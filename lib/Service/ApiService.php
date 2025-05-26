@@ -29,7 +29,6 @@ class ApiService {
 	private IClient $client;
 
 	public function __construct(
-		string $appName,
 		private LoggerInterface $logger,
 		private IL10N $l10n,
 		private ICrypto $crypto,
@@ -43,10 +42,16 @@ class ApiService {
 	 * @param string $approveCallbackUri
 	 * @param string $rejectCallbackUri
 	 * @param string $description
+	 * @param string|null $userId
 	 * @return string
 	 */
-	public function getSignature(string $approveCallbackUri, string $rejectCallbackUri, string $description): string {
-		return hash('sha256', $this->crypto->calculateHMAC($approveCallbackUri . $rejectCallbackUri . $description));
+	public function getSignature(
+		string $approveCallbackUri, string $rejectCallbackUri, string $description, ?string $userId = null,
+	): string {
+		return hash(
+			'sha256',
+			$this->crypto->calculateHMAC($approveCallbackUri . $rejectCallbackUri . $description . ($userId ?? '')),
+		);
 	}
 
 	/**
@@ -54,61 +59,81 @@ class ApiService {
 	 * @param string $rejectCallbackUri
 	 * @param string $description
 	 * @param string $signature
+	 * @param string|null $userId
 	 * @return bool
 	 */
 	public function checkSignature(
-		string $approveCallbackUri, string $rejectCallbackUri, string $description, string $signature,
+		string $approveCallbackUri, string $rejectCallbackUri, string $description, string $signature, ?string $userId = null,
 	): bool {
-		return $this->getSignature($approveCallbackUri, $rejectCallbackUri, $description) === $signature;
+		return $this->getSignature($approveCallbackUri, $rejectCallbackUri, $description, $userId) === $signature;
 	}
 
 	/**
 	 * @param string $approveCallbackUri
 	 * @param string $rejectCallbackUri
 	 * @param string $description
+	 * @param string|null $userId
 	 * @return string
 	 */
-	public function generateLink(string $approveCallbackUri, string $rejectCallbackUri, string $description): string {
-		return $this->urlGenerator->linkToRouteAbsolute(Application::APP_ID . '.page.index', [
+	public function generateLink(
+		string $approveCallbackUri, string $rejectCallbackUri, string $description, ?string $userId = null,
+	): string {
+		$params = [
 			'approveCallbackUri' => $approveCallbackUri,
 			'rejectCallbackUri' => $rejectCallbackUri,
 			'description' => $description,
-			'signature' => $this->getSignature($approveCallbackUri, $rejectCallbackUri, $description),
-		]);
+			'signature' => $this->getSignature($approveCallbackUri, $rejectCallbackUri, $description, $userId),
+		];
+		if ($userId !== null) {
+			$params['userId'] = $userId;
+		}
+		return $this->urlGenerator->linkToRouteAbsolute(Application::APP_ID . '.page.index', $params);
 	}
 
 	/**
+	 * @param string|null $currentUserId
 	 * @param string $approveCallbackUri
 	 * @param string $rejectCallbackUri
 	 * @param string $description
+	 * @param string|null $authorizedUserId
 	 * @param string $signature
 	 * @return array
 	 * @throws SignatureException
 	 * @throws Throwable
 	 */
 	public function approve(
-		string $approveCallbackUri, string $rejectCallbackUri, string $description, string $signature,
+		?string $currentUserId, string $approveCallbackUri, string $rejectCallbackUri, string $description,
+		?string $authorizedUserId, string $signature,
 	): array {
-		if (!$this->checkSignature($approveCallbackUri, $rejectCallbackUri, $description, $signature)) {
+		if (!$this->checkSignature($approveCallbackUri, $rejectCallbackUri, $description, $signature, $authorizedUserId)) {
 			throw new SignatureException();
+		}
+		if ($authorizedUserId !== null && $authorizedUserId !== $currentUserId) {
+			throw new Exception('unauthorized user');
 		}
 		return $this->request($approveCallbackUri);
 	}
 
 	/**
+	 * @param string|null $currentUserId
 	 * @param string $approveCallbackUri
 	 * @param string $rejectCallbackUri
 	 * @param string $description
+	 * @param string|null $authorizedUserId
 	 * @param string $signature
 	 * @return array
 	 * @throws SignatureException
 	 * @throws Throwable
 	 */
 	public function reject(
-		string $approveCallbackUri, string $rejectCallbackUri, string $description, string $signature,
+		?string $currentUserId, string $approveCallbackUri, string $rejectCallbackUri, string $description,
+		?string $authorizedUserId, string $signature,
 	): array {
-		if (!$this->checkSignature($approveCallbackUri, $rejectCallbackUri, $description, $signature)) {
+		if (!$this->checkSignature($approveCallbackUri, $rejectCallbackUri, $description, $signature, $authorizedUserId)) {
 			throw new SignatureException();
+		}
+		if ($authorizedUserId !== null && $authorizedUserId !== $currentUserId) {
+			throw new Exception('unauthorized user');
 		}
 		return $this->request($rejectCallbackUri);
 	}
