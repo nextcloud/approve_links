@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "970c9dc7d774909f737fac1ada3e5968",
+    "content-hash": "fa5f3f7771fd64cfef1f32e215254cbc",
     "packages": [],
     "packages-dev": [
         {
@@ -152,16 +152,16 @@
         },
         {
             "name": "kubawerlos/php-cs-fixer-custom-fixers",
-            "version": "v3.25.0",
+            "version": "v3.26.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/kubawerlos/php-cs-fixer-custom-fixers.git",
-                "reference": "50e070e5457ca4570e032207d201b3874aaff942"
+                "reference": "67f253320e0db784ab0d1248af6fc42e5f2215e2"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/kubawerlos/php-cs-fixer-custom-fixers/zipball/50e070e5457ca4570e032207d201b3874aaff942",
-                "reference": "50e070e5457ca4570e032207d201b3874aaff942",
+                "url": "https://api.github.com/repos/kubawerlos/php-cs-fixer-custom-fixers/zipball/67f253320e0db784ab0d1248af6fc42e5f2215e2",
+                "reference": "67f253320e0db784ab0d1248af6fc42e5f2215e2",
                 "shasum": ""
             },
             "require": {
@@ -192,9 +192,15 @@
             "description": "A set of custom fixers for PHP CS Fixer",
             "support": {
                 "issues": "https://github.com/kubawerlos/php-cs-fixer-custom-fixers/issues",
-                "source": "https://github.com/kubawerlos/php-cs-fixer-custom-fixers/tree/v3.25.0"
+                "source": "https://github.com/kubawerlos/php-cs-fixer-custom-fixers/tree/v3.26.0"
             },
-            "time": "2025-05-06T20:12:43+00:00"
+            "funding": [
+                {
+                    "url": "https://github.com/kubawerlos",
+                    "type": "github"
+                }
+            ],
+            "time": "2025-06-01T11:49:27+00:00"
         },
         {
             "name": "myclabs/deep-copy",
@@ -304,12 +310,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/nextcloud-deps/ocp.git",
-                "reference": "60b8de6928c588045e54449f0796217e87e0dd56"
+                "reference": "23762227ef0c6c978b093f986973a2a50755d4a7"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/nextcloud-deps/ocp/zipball/60b8de6928c588045e54449f0796217e87e0dd56",
-                "reference": "60b8de6928c588045e54449f0796217e87e0dd56",
+                "url": "https://api.github.com/repos/nextcloud-deps/ocp/zipball/23762227ef0c6c978b093f986973a2a50755d4a7",
+                "reference": "23762227ef0c6c978b093f986973a2a50755d4a7",
                 "shasum": ""
             },
             "require": {
@@ -345,7 +351,7 @@
                 "issues": "https://github.com/nextcloud-deps/ocp/issues",
                 "source": "https://github.com/nextcloud-deps/ocp/tree/master"
             },
-            "time": "2025-05-23T00:51:51+00:00"
+            "time": "2025-06-04T00:53:20+00:00"
         },
         {
             "name": "nextcloud/openapi-extractor",
@@ -396,16 +402,16 @@
         },
         {
             "name": "nikic/php-parser",
-            "version": "v5.4.0",
+            "version": "v5.5.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/nikic/PHP-Parser.git",
-                "reference": "447a020a1f875a434d62f2a401f53b82a396e494"
+                "reference": "ae59794362fe85e051a58ad36b289443f57be7a9"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/nikic/PHP-Parser/zipball/447a020a1f875a434d62f2a401f53b82a396e494",
-                "reference": "447a020a1f875a434d62f2a401f53b82a396e494",
+                "url": "https://api.github.com/repos/nikic/PHP-Parser/zipball/ae59794362fe85e051a58ad36b289443f57be7a9",
+                "reference": "ae59794362fe85e051a58ad36b289443f57be7a9",
                 "shasum": ""
             },
             "require": {
@@ -448,9 +454,9 @@
             ],
             "support": {
                 "issues": "https://github.com/nikic/PHP-Parser/issues",
-                "source": "https://github.com/nikic/PHP-Parser/tree/v5.4.0"
+                "source": "https://github.com/nikic/PHP-Parser/tree/v5.5.0"
             },
-            "time": "2024-12-30T11:07:19+00:00"
+            "time": "2025-05-31T08:24:38+00:00"
         },
         {
             "name": "phar-io/manifest",
@@ -1101,20 +1107,20 @@
         },
         {
             "name": "psalm/phar",
-            "version": "5.26.1",
+            "version": "6.12.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/psalm/phar.git",
-                "reference": "8a38e7ad04499a0ccd2c506fd1da6fc01fff4547"
+                "reference": "0668b277200a19122f9a9d7e3ce4125b0d42b040"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/psalm/phar/zipball/8a38e7ad04499a0ccd2c506fd1da6fc01fff4547",
-                "reference": "8a38e7ad04499a0ccd2c506fd1da6fc01fff4547",
+                "url": "https://api.github.com/repos/psalm/phar/zipball/0668b277200a19122f9a9d7e3ce4125b0d42b040",
+                "reference": "0668b277200a19122f9a9d7e3ce4125b0d42b040",
                 "shasum": ""
             },
             "require": {
-                "php": "^7.1 || ^8.0"
+                "php": "^8.2"
             },
             "conflict": {
                 "vimeo/psalm": "*"
@@ -1130,9 +1136,9 @@
             "description": "Composer-based Psalm Phar",
             "support": {
                 "issues": "https://github.com/psalm/phar/issues",
-                "source": "https://github.com/psalm/phar/tree/5.26.1"
+                "source": "https://github.com/psalm/phar/tree/6.12.0"
             },
-            "time": "2024-09-09T16:22:43+00:00"
+            "time": "2025-05-29T19:53:46+00:00"
         },
         {
             "name": "psr/clock",
@@ -2357,7 +2363,7 @@
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": {
-        "php": "^8.0"
+        "php": ">=8.1.0"
     },
     "platform-dev": {},
     "plugin-api-version": "2.6.0"
