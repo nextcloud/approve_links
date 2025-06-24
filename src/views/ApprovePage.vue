@@ -29,7 +29,7 @@
 				{{ t('approve_links', 'Your approval was registered.') }}
 				<NcButton
 					class="button"
-					type="secondary"
+					variant="secondary"
 					@click="onClose">
 					<template #icon>
 						<CloseIcon :size="24" />
@@ -44,7 +44,7 @@
 				<div class="buttons">
 					<NcButton
 						class="button"
-						type="error"
+						variant="error"
 						@click="onReject">
 						<template #icon>
 							<NcLoadingIcon v-if="rejectLoading" :size="24" />
@@ -54,7 +54,7 @@
 					</NcButton>
 					<NcButton
 						class="button"
-						type="success"
+						variant="success"
 						@click="onApprove">
 						<template #icon>
 							<NcLoadingIcon v-if="approveLoading" :size="24" />
@@ -72,12 +72,13 @@
 import CloseIcon from 'vue-material-design-icons/Close.vue'
 import CheckIcon from 'vue-material-design-icons/Check.vue'
 
-import NcLoadingIcon from '@nextcloud/vue/dist/Components/NcLoadingIcon.js'
-import NcButton from '@nextcloud/vue/dist/Components/NcButton.js'
+import NcLoadingIcon from '@nextcloud/vue/components/NcLoadingIcon'
+import NcButton from '@nextcloud/vue/components/NcButton'
 
 import { generateOcsUrl } from '@nextcloud/router'
 import { showError, showSuccess } from '@nextcloud/dialogs'
 import axios from '@nextcloud/axios'
+import '@nextcloud/dialogs/style.css'
 
 export default {
 	name: 'ApprovePage',
