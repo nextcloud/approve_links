@@ -86,6 +86,12 @@
                                     "description": {
                                         "type": "string",
                                         "description": "The approval description"
+                                    },
+                                    "userId": {
+                                        "type": "string",
+                                        "nullable": true,
+                                        "default": null,
+                                        "description": "Optional user ID to restrict who can approve"
                                     }
                                 }
                             }
@@ -241,6 +247,12 @@
                                     "signature": {
                                         "type": "string",
                                         "description": "The approval link signature"
+                                    },
+                                    "userId": {
+                                        "type": "string",
+                                        "nullable": true,
+                                        "default": null,
+                                        "description": "Optional user ID to restrict who can approve"
                                     }
                                 }
                             }
@@ -460,6 +472,12 @@
                                     "signature": {
                                         "type": "string",
                                         "description": "The approval link signature"
+                                    },
+                                    "userId": {
+                                        "type": "string",
+                                        "nullable": true,
+                                        "default": null,
+                                        "description": "Optional user ID to restrict who can approve"
                                     }
                                 }
                             }
