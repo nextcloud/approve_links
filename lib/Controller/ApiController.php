@@ -35,7 +35,7 @@ class ApiController extends OCSController {
 		string $appName,
 		IRequest $request,
 		private ApiService $apiService,
-		?string $userId,
+		private ?string $userId,
 	) {
 		parent::__construct($appName, $request);
 	}
@@ -48,6 +48,7 @@ class ApiController extends OCSController {
 	 * @param string $approveCallbackUri The URI to request on approval
 	 * @param string $rejectCallbackUri The URI to request on rejection
 	 * @param string $description The approval description
+	 * @param ?string $userId Optional user ID to restrict who can approve
 	 * @return DataResponse<Http::STATUS_OK, array{link: string}, array{}>|DataResponse<Http::STATUS_BAD_REQUEST, array{error: string}, array{}>
 	 *
 	 * 200: The link has been successfully generated
@@ -56,8 +57,8 @@ class ApiController extends OCSController {
 	#[NoCSRFRequired]
 	#[AuthorizedAdminSetting(settings: Admin::class)]
 	#[OpenAPI(scope: OpenAPI::SCOPE_DEFAULT, tags: ['api'])]
-	public function generateLink(string $approveCallbackUri, string $rejectCallbackUri, string $description): DataResponse {
-		$link = $this->apiService->generateLink($approveCallbackUri, $rejectCallbackUri, $description);
+	public function generateLink(string $approveCallbackUri, string $rejectCallbackUri, string $description, ?string $userId = null): DataResponse {
+		$link = $this->apiService->generateLink($approveCallbackUri, $rejectCallbackUri, $description, $userId);
 		if (strlen($link) > Application::MAX_GENERATED_LINK_LENGTH) {
 			$responseData = [
 				'error' => 'link_too_long',
@@ -80,6 +81,7 @@ class ApiController extends OCSController {
 	 * @param string $approveCallbackUri The URI to request on approval
 	 * @param string $rejectCallbackUri The URI to request on rejection
 	 * @param string $description The approval description
+	 * @param ?string $userId Optional user ID to restrict who can approve
 	 * @param string $signature The approval link signature
 	 * @return DataResponse<Http::STATUS_OK, array{result: array{body: string}}, array{}>|DataResponse<Http::STATUS_BAD_REQUEST|Http::STATUS_UNAUTHORIZED, array{error: string, message: string}, array{}>
 	 * @throws \Throwable
@@ -93,9 +95,11 @@ class ApiController extends OCSController {
 	#[PublicPage]
 	#[BruteForceProtection(action: 'approveLink')]
 	#[OpenAPI(scope: OpenAPI::SCOPE_DEFAULT, tags: ['api'])]
-	public function approve(string $approveCallbackUri, string $rejectCallbackUri, string $description, string $signature): DataResponse {
+	public function approve(
+		string $approveCallbackUri, string $rejectCallbackUri, string $description, string $signature, ?string $userId = null,
+	): DataResponse {
 		try {
-			$approveResult = $this->apiService->approve($approveCallbackUri, $rejectCallbackUri, $description, $signature);
+			$approveResult = $this->apiService->approve($this->userId, $approveCallbackUri, $rejectCallbackUri, $description, $userId, $signature);
 			$responseData = [
 				'result' => $approveResult,
 			];
@@ -117,6 +121,7 @@ class ApiController extends OCSController {
 	 * @param string $approveCallbackUri The URI to request on approval
 	 * @param string $rejectCallbackUri The URI to request on rejection
 	 * @param string $description The approval description
+	 * @param ?string $userId Optional user ID to restrict who can approve
 	 * @param string $signature The approval link signature
 	 * @return DataResponse<Http::STATUS_OK, array{result: array{body: string}}, array{}>|DataResponse<Http::STATUS_BAD_REQUEST|Http::STATUS_UNAUTHORIZED, array{error: string, message: string}, array{}>
 	 * @throws \Throwable
@@ -130,9 +135,11 @@ class ApiController extends OCSController {
 	#[PublicPage]
 	#[BruteForceProtection(action: 'rejectLink')]
 	#[OpenAPI(scope: OpenAPI::SCOPE_DEFAULT, tags: ['api'])]
-	public function reject(string $approveCallbackUri, string $rejectCallbackUri, string $description, string $signature): DataResponse {
+	public function reject(
+		string $approveCallbackUri, string $rejectCallbackUri, string $description, string $signature, ?string $userId = null,
+	): DataResponse {
 		try {
-			$rejectResult = $this->apiService->reject($approveCallbackUri, $rejectCallbackUri, $description, $signature);
+			$rejectResult = $this->apiService->reject($this->userId, $approveCallbackUri, $rejectCallbackUri, $description, $userId, $signature);
 			$responseData = [
 				'result' => $rejectResult,
 			];
