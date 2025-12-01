@@ -35,7 +35,6 @@ class ApiController extends OCSController {
 		string $appName,
 		IRequest $request,
 		private ApiService $apiService,
-		?string $userId,
 	) {
 		parent::__construct($appName, $request);
 	}

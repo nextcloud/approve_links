@@ -31,7 +31,6 @@ class PageController extends Controller {
 		string $appName,
 		IRequest $request,
 		private ApiService $apiService,
-		private ?string $userId,
 	) {
 		parent::__construct($appName, $request);
 	}

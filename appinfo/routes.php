@@ -17,7 +17,6 @@ $requirements = [
 
 return [
 	'routes' => [
-		['name' => 'config#setAdminConfig', 'url' => '/admin-config', 'verb' => 'PUT'],
 		['name' => 'page#index', 'url' => '/link', 'verb' => 'GET'],
 	],
 	'ocs' => [
