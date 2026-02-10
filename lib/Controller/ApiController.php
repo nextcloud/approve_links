@@ -35,6 +35,7 @@ class ApiController extends OCSController {
 		string $appName,
 		IRequest $request,
 		private ApiService $apiService,
+		private ?string $userId,
 	) {
 		parent::__construct($appName, $request);
 	}
@@ -56,10 +57,11 @@ class ApiController extends OCSController {
 	#[AuthorizedAdminSetting(settings: Admin::class)]
 	#[OpenAPI(scope: OpenAPI::SCOPE_DEFAULT, tags: ['api'])]
 	public function generateLink(string $approveCallbackUri, string $rejectCallbackUri, string $description): DataResponse {
-		$link = $this->apiService->generateLink($approveCallbackUri, $rejectCallbackUri, $description);
-		if (strlen($link) > Application::MAX_GENERATED_LINK_LENGTH) {
+		try {
+			$link = $this->apiService->generateLink($approveCallbackUri, $rejectCallbackUri, $description, $this->userId);
+		} catch (Exception $e) {
 			$responseData = [
-				'error' => 'link_too_long',
+				'error' => $e->getMessage(),
 			];
 			return new DataResponse($responseData, Http::STATUS_BAD_REQUEST);
 		}

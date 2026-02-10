@@ -16,7 +16,11 @@ use Exception;
 use GuzzleHttp\Exception\ClientException;
 use GuzzleHttp\Exception\ServerException;
 use OCA\ApproveLinks\AppInfo\Application;
+use OCA\ApproveLinks\Db\Link;
+use OCA\ApproveLinks\Db\LinkMapper;
 use OCA\ApproveLinks\SignatureException;
+use OCP\AppFramework\Db\DoesNotExistException;
+use OCP\AppFramework\Db\MultipleObjectsReturnedException;
 use OCP\Http\Client\IClient;
 use OCP\Http\Client\IClientService;
 use OCP\IL10N;
@@ -34,6 +38,7 @@ class ApiService {
 		private IL10N $l10n,
 		private ICrypto $crypto,
 		private IUrlGenerator $urlGenerator,
+		private LinkMapper $linkMapper,
 		IClientService $clientService,
 	) {
 		$this->client = $clientService->newClient();
@@ -66,15 +71,40 @@ class ApiService {
 	 * @param string $approveCallbackUri
 	 * @param string $rejectCallbackUri
 	 * @param string $description
+	 * @param string|null $userId
 	 * @return string
+	 * @throws \OCP\DB\Exception
 	 */
-	public function generateLink(string $approveCallbackUri, string $rejectCallbackUri, string $description): string {
-		return $this->urlGenerator->linkToRouteAbsolute(Application::APP_ID . '.page.index', [
+	public function generateLink(
+		string $approveCallbackUri, string $rejectCallbackUri, string $description, ?string $userId = null,
+	): string {
+		$signature = $this->getSignature($approveCallbackUri, $rejectCallbackUri, $description);
+		$link = $this->urlGenerator->linkToRouteAbsolute(Application::APP_ID . '.page.index', [
 			'approveCallbackUri' => $approveCallbackUri,
 			'rejectCallbackUri' => $rejectCallbackUri,
 			'description' => $description,
-			'signature' => $this->getSignature($approveCallbackUri, $rejectCallbackUri, $description),
+			'signature' => $signature,
 		]);
+
+		if (strlen($link) > Application::MAX_GENERATED_LINK_LENGTH) {
+			throw new Exception('link_too_long');
+		}
+
+		try {
+			$linkEntity = $this->linkMapper->findBySignature($signature);
+			// if it exists, mark the link as not done
+			$linkEntity->setDoneAt(null);
+			$this->linkMapper->update($linkEntity);
+		} catch (DoesNotExistException $e) {
+			// if it does not exist, create it
+			$linkEntity = new Link();
+			$linkEntity->setCreatedAt(time());
+			$linkEntity->setUserId($userId ?? '');
+			$linkEntity->setSignature($signature);
+			$this->linkMapper->insert($linkEntity);
+		}
+
+		return $link;
 	}
 
 	/**
@@ -92,6 +122,8 @@ class ApiService {
 		if (!$this->checkSignature($approveCallbackUri, $rejectCallbackUri, $description, $signature)) {
 			throw new SignatureException();
 		}
+		$this->checkDoneAt($signature);
+		$this->setDoneAt($signature);
 		return $this->request($approveCallbackUri);
 	}
 
@@ -110,7 +142,44 @@ class ApiService {
 		if (!$this->checkSignature($approveCallbackUri, $rejectCallbackUri, $description, $signature)) {
 			throw new SignatureException();
 		}
+		$this->checkDoneAt($signature);
+		$this->setDoneAt($signature);
 		return $this->request($rejectCallbackUri);
+	}
+
+	/**
+	 * Raise an exception if the link has already been done
+	 * If the link does not exist, it might have been created before we started storing them
+	 *
+	 * @param string $signature
+	 * @return void
+	 * @throws Exception
+	 */
+	private function checkDoneAt(string $signature): void {
+		try {
+			$linkEntity = $this->linkMapper->findBySignature($signature);
+			if ($linkEntity->getDoneAt() !== null) {
+				throw new Exception('link_already_done');
+			}
+		} catch (MultipleObjectsReturnedException $e) {
+			// this should not happen, we prevent creating multiple links with the same signature
+			throw $e;
+		} catch (DoesNotExistException $e) {
+			// the link does not exist, all good, it might have been created before we started storing them
+		}
+	}
+
+	private function setDoneAt(string $signature): void {
+		try {
+			$linkEntity = $this->linkMapper->findBySignature($signature);
+			$linkEntity->setDoneAt(time());
+			$this->linkMapper->update($linkEntity);
+		} catch (MultipleObjectsReturnedException $e) {
+			// this should not happen, we prevent creating multiple links with the same signature
+			throw $e;
+		} catch (DoesNotExistException $e) {
+			// the link does not exist, all good, it might have been created before we started storing them
+		}
 	}
 
 	/**
