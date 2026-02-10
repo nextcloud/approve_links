@@ -29,7 +29,10 @@
     "config": {
         "allow-plugins": {
             "bamarni/composer-bin-plugin": true
-        }
+        },
+		"platform": {
+			"php": "8.2.27"
+		}
     },
 	"extra": {
 		"bamarni-bin": {
