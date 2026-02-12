@@ -30,8 +30,12 @@ class ApiServiceTest extends \PHPUnit\Framework\TestCase {
 		$urlQuery = parse_url($link, PHP_URL_QUERY);
 		parse_str($urlQuery, $query);
 		$linkSignature = $query['signature'] ?? null;
+		$linkId = $query['id'] ?? null;
+		if ($linkId !== null) {
+			$linkId = (int)$linkId;
+		}
 
-		$signature = $this->apiService->getSignature($approveCallbackUri, $rejectCallbackUri, $description);
+		$signature = $this->apiService->getSignature($approveCallbackUri, $rejectCallbackUri, $description, $linkId);
 
 		$this->assertEquals($linkSignature, $signature);
 	}

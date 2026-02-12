@@ -13,7 +13,6 @@
 namespace OCA\ApproveLinks\Controller;
 
 use Exception;
-use OCA\ApproveLinks\AppInfo\Application;
 use OCA\ApproveLinks\Service\ApiService;
 use OCA\ApproveLinks\Settings\Admin;
 use OCA\ApproveLinks\SignatureException;
