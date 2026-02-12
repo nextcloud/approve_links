@@ -22,7 +22,9 @@ use OCP\AppFramework\Http\Attribute\PublicPage;
 use OCP\AppFramework\Http\Template\PublicTemplateResponse;
 use OCP\AppFramework\Http\TemplateResponse;
 
+use OCP\IL10N;
 use OCP\IRequest;
+use Psr\Log\LoggerInterface;
 
 #[OpenAPI(scope: OpenAPI::SCOPE_IGNORE)]
 class PageController extends Controller {
@@ -31,6 +33,8 @@ class PageController extends Controller {
 		string $appName,
 		IRequest $request,
 		private ApiService $apiService,
+		private IL10N $l10n,
+		private LoggerInterface $logger,
 	) {
 		parent::__construct($appName, $request);
 	}
@@ -49,8 +53,13 @@ class PageController extends Controller {
 			try {
 				$this->apiService->checkDoneAt($id);
 			} catch (\Exception $e) {
+				$this->logger->warning('ApproveLinks checkDoneAt error', ['exception' => $e]);
 				if ($e->getCode() === Http::STATUS_CONFLICT) {
-					return $this->getErrorResponse('This link has already been used', false);
+					return $this->getErrorResponse($this->l10n->t('This link has already been used'), false);
+				} elseif ($e->getCode() === Http::STATUS_NOT_FOUND) {
+					return $this->getErrorResponse($this->l10n->t('This link was not found'), false);
+				} else {
+					return $this->getErrorResponse($this->l10n->t('Unknown error'), false);
 				}
 			}
 		}

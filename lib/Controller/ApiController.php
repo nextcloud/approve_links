@@ -82,12 +82,14 @@ class ApiController extends OCSController {
 	 * @param string $description The approval description
 	 * @param string $signature The approval link signature
 	 * @param int|null $id The approval link id, it can be null for old links
-	 * @return DataResponse<Http::STATUS_OK, array{result: array{body: string}}, array{}>|DataResponse<Http::STATUS_BAD_REQUEST|Http::STATUS_UNAUTHORIZED, array{error: string, message: string}, array{}>
+	 * @return DataResponse<Http::STATUS_OK, array{result: array{body: string}}, array{}>|DataResponse<Http::STATUS_BAD_REQUEST|Http::STATUS_UNAUTHORIZED|Http::STATUS_CONFLICT|Http::STATUS_NOT_FOUND, array{error: string, message: string}, array{}>
 	 * @throws \Throwable
 	 *
 	 * 200: The callback URI has been successfully requested
 	 * 401: The signature is incorrect
 	 * 400: There was an error while approving
+	 * 404: The link was not found
+	 * 409: The link was used already
 	 */
 	#[NoCSRFRequired]
 	#[NoAdminRequired]
@@ -108,7 +110,11 @@ class ApiController extends OCSController {
 			$response->throttle(['reason' => 'bad signature']);
 			return $response;
 		} catch (Exception $e) {
-			return new DataResponse(['error' => 'unknown', 'message' => $e->getMessage()], Http::STATUS_BAD_REQUEST);
+			$responseCode = $e->getCode();
+			if ($responseCode !== Http::STATUS_NOT_FOUND && $responseCode !== Http::STATUS_CONFLICT) {
+				$responseCode = Http::STATUS_BAD_REQUEST;
+			}
+			return new DataResponse(['message' => $e->getMessage()], $responseCode);
 		}
 	}
 
@@ -122,12 +128,14 @@ class ApiController extends OCSController {
 	 * @param string $description The approval description
 	 * @param string $signature The approval link signature
 	 * @param int|null $id The approval link id, it can be null for old links
-	 * @return DataResponse<Http::STATUS_OK, array{result: array{body: string}}, array{}>|DataResponse<Http::STATUS_BAD_REQUEST|Http::STATUS_UNAUTHORIZED, array{error: string, message: string}, array{}>
+	 * @return DataResponse<Http::STATUS_OK, array{result: array{body: string}}, array{}>|DataResponse<Http::STATUS_BAD_REQUEST|Http::STATUS_UNAUTHORIZED|Http::STATUS_CONFLICT|Http::STATUS_NOT_FOUND, array{error: string, message: string}, array{}>
 	 * @throws \Throwable
 	 *
 	 * 200: The callback URI has been successfully requested
 	 * 401: The signature is incorrect
 	 * 400: There was an error while rejecting
+	 * 404: The link was not found
+	 * 409: The link was used already
 	 */
 	#[NoCSRFRequired]
 	#[NoAdminRequired]
@@ -148,7 +156,11 @@ class ApiController extends OCSController {
 			$response->throttle(['reason' => 'bad signature']);
 			return $response;
 		} catch (Exception $e) {
-			return new DataResponse(['error' => 'unknown', 'message' => $e->getMessage()], Http::STATUS_BAD_REQUEST);
+			$responseCode = $e->getCode();
+			if ($responseCode !== Http::STATUS_NOT_FOUND && $responseCode !== Http::STATUS_CONFLICT) {
+				$responseCode = Http::STATUS_BAD_REQUEST;
+			}
+			return new DataResponse(['message' => $e->getMessage()], $responseCode);
 		}
 	}
 }

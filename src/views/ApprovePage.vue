@@ -138,6 +138,10 @@ export default {
 					showError(t('approve_links', 'The request to the approve callback URI failed'))
 				} else if (error.response.status === 401) {
 					showError(t('approve_links', 'Bad signature'))
+				} else if (error.response.status === 404) {
+					showError(t('approve_links', 'Unknown link'))
+				} else if (error.response.status === 409) {
+					showError(t('approve_links', 'This link has already been approved or rejected'))
 				}
 			}).then(() => {
 				this.approveLoading = false
@@ -164,6 +168,10 @@ export default {
 					showError(t('approve_links', 'The request to the reject callback URI failed'))
 				} else if (error.response.status === 401) {
 					showError(t('approve_links', 'Bad signature'))
+				} else if (error.response.status === 404) {
+					showError(t('approve_links', 'Unknown link'))
+				} else if (error.response.status === 409) {
+					showError(t('approve_links', 'This link has already been approved or rejected'))
 				}
 			}).then(() => {
 				this.rejectLoading = false
