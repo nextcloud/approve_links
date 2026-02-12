@@ -18,6 +18,13 @@ class LinkMapper extends QBMapper {
 		parent::__construct($db, 'approve_links_links', Link::class);
 	}
 
+	/**
+	 * @param int $id
+	 * @return Link
+	 * @throws DoesNotExistException
+	 * @throws Exception
+	 * @throws MultipleObjectsReturnedException
+	 */
 	public function findById(int $id): Link {
 		$qb = $this->db->getQueryBuilder();
 
@@ -25,25 +32,6 @@ class LinkMapper extends QBMapper {
 			->from($this->getTableName())
 			->where(
 				$qb->expr()->eq('id', $qb->createNamedParameter($id, IQueryBuilder::PARAM_INT))
-			);
-
-		return $this->findEntity($qb);
-	}
-
-	/**
-	 * @param string $signature
-	 * @return Link
-	 * @throws DoesNotExistException
-	 * @throws MultipleObjectsReturnedException
-	 * @throws Exception
-	 */
-	public function findBySignature(string $signature): Link {
-		$qb = $this->db->getQueryBuilder();
-
-		$qb->select('*')
-			->from($this->getTableName())
-			->where(
-				$qb->expr()->eq('signature', $qb->createNamedParameter($signature, IQueryBuilder::PARAM_STR))
 			);
 
 		return $this->findEntity($qb);

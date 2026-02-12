@@ -10,8 +10,6 @@ use OCP\DB\Types;
  * @method \void setId(int $id)
  * @method \string getUserId()
  * @method \void setUserId(string $userId)
- * @method \string getSignature()
- * @method \void setSignature(string $signature)
  * @method \int getCreatedAt()
  * @method \void setCreatedAt(int $createdAt)
  * @method \int|\null getDoneAt()
@@ -20,13 +18,11 @@ use OCP\DB\Types;
 class Link extends Entity implements \JsonSerializable {
 
 	protected $userId;
-	protected $signature;
 	protected $createdAt;
 	protected $doneAt;
 
 	public function __construct() {
 		$this->addType('userId', Types::STRING);
-		$this->addType('signature', Types::STRING);
 		$this->addType('createdAt', Types::INTEGER);
 		$this->addType('doneAt', Types::INTEGER);
 	}
@@ -36,7 +32,6 @@ class Link extends Entity implements \JsonSerializable {
 		return [
 			'id' => $this->getId(),
 			'userId' => $this->getUserId(),
-			'signature' => $this->getSignature(),
 			'createdAt' => $this->getCreatedAt(),
 			'doneAt' => $this->getDoneAt(),
 		];

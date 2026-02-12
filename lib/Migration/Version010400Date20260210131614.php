@@ -43,10 +43,6 @@ class Version010400Date20260210131614 extends SimpleMigrationStep {
 				'notnull' => true,
 				'length' => 64,
 			]);
-			$table->addColumn('signature', Types::STRING, [
-				'notnull' => true,
-				'length' => 256,
-			]);
 			$table->addColumn('created_at', Types::BIGINT, [
 				'notnull' => true,
 			]);

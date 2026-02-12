@@ -38,26 +38,44 @@ class PageController extends Controller {
 	#[PublicPage]
 	#[NoCSRFRequired]
 	#[BruteForceProtection(action: 'approvePage')]
-	public function index(string $approveCallbackUri, string $rejectCallbackUri, string $description, string $signature): TemplateResponse {
-		if (!$this->apiService->checkSignature($approveCallbackUri, $rejectCallbackUri, $description, $signature)) {
-			$params = [
-				'errors' => [
-					['error' => 'Bad signature'],
-				],
-			];
-			$response = new TemplateResponse(
-				'',
-				'error',
-				$params,
-				TemplateResponse::RENDER_AS_ERROR
-			);
-			$response->setStatus(Http::STATUS_UNAUTHORIZED);
-			$response->throttle(['reason' => 'bad signature']);
-			return $response;
+	public function index(
+		string $approveCallbackUri, string $rejectCallbackUri, string $description, string $signature, ?int $id = null,
+	): TemplateResponse {
+		if (!$this->apiService->checkSignature($approveCallbackUri, $rejectCallbackUri, $description, $signature, $id)) {
+			return $this->getErrorResponse('Bad signature');
 		}
+
+		if ($id !== null) {
+			try {
+				$this->apiService->checkDoneAt($id);
+			} catch (\Exception $e) {
+				if ($e->getCode() === Http::STATUS_CONFLICT) {
+					return $this->getErrorResponse('This link has already been used', false);
+				}
+			}
+		}
+
 		$response = new PublicTemplateResponse('approve_links', 'page');
-		//$response->setHeaderDetails($this->trans->t('Enter link password of project %s', [$publicShareInfo['projectid']]));
 		$response->setFooterVisible(false);
+		return $response;
+	}
+
+	private function getErrorResponse(string $message, bool $throttle = true): TemplateResponse {
+		$params = [
+			'errors' => [
+				['error' => $message],
+			],
+		];
+		$response = new TemplateResponse(
+			'',
+			'error',
+			$params,
+			TemplateResponse::RENDER_AS_ERROR
+		);
+		$response->setStatus(Http::STATUS_UNAUTHORIZED);
+		if ($throttle) {
+			$response->throttle(['reason' => $message]);
+		}
 		return $response;
 	}
 }

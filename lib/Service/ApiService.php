@@ -21,6 +21,7 @@ use OCA\ApproveLinks\Db\LinkMapper;
 use OCA\ApproveLinks\SignatureException;
 use OCP\AppFramework\Db\DoesNotExistException;
 use OCP\AppFramework\Db\MultipleObjectsReturnedException;
+use OCP\AppFramework\Http;
 use OCP\Http\Client\IClient;
 use OCP\Http\Client\IClientService;
 use OCP\IL10N;
@@ -48,10 +49,11 @@ class ApiService {
 	 * @param string $approveCallbackUri
 	 * @param string $rejectCallbackUri
 	 * @param string $description
+	 * @param int|null $id
 	 * @return string
 	 */
-	public function getSignature(string $approveCallbackUri, string $rejectCallbackUri, string $description): string {
-		return hash('sha256', $this->crypto->calculateHMAC($approveCallbackUri . $rejectCallbackUri . $description));
+	public function getSignature(string $approveCallbackUri, string $rejectCallbackUri, string $description, ?int $id): string {
+		return hash('sha256', $this->crypto->calculateHMAC($approveCallbackUri . $rejectCallbackUri . $description . ($id ?? '')));
 	}
 
 	/**
@@ -59,12 +61,13 @@ class ApiService {
 	 * @param string $rejectCallbackUri
 	 * @param string $description
 	 * @param string $signature
+	 * @param int|null $id
 	 * @return bool
 	 */
 	public function checkSignature(
-		string $approveCallbackUri, string $rejectCallbackUri, string $description, string $signature,
+		string $approveCallbackUri, string $rejectCallbackUri, string $description, string $signature, ?int $id = null,
 	): bool {
-		return $this->getSignature($approveCallbackUri, $rejectCallbackUri, $description) === $signature;
+		return $this->getSignature($approveCallbackUri, $rejectCallbackUri, $description, $id) === $signature;
 	}
 
 	/**
@@ -78,30 +81,24 @@ class ApiService {
 	public function generateLink(
 		string $approveCallbackUri, string $rejectCallbackUri, string $description, ?string $userId = null,
 	): string {
-		$signature = $this->getSignature($approveCallbackUri, $rejectCallbackUri, $description);
+		// if it does not exist, create it
+		$linkEntity = new Link();
+		$linkEntity->setCreatedAt(time());
+		$linkEntity->setUserId($userId ?? '');
+		$linkEntity = $this->linkMapper->insert($linkEntity);
+
+		$signature = $this->getSignature($approveCallbackUri, $rejectCallbackUri, $description, $linkEntity->getId());
 		$link = $this->urlGenerator->linkToRouteAbsolute(Application::APP_ID . '.page.index', [
 			'approveCallbackUri' => $approveCallbackUri,
 			'rejectCallbackUri' => $rejectCallbackUri,
 			'description' => $description,
 			'signature' => $signature,
+			'id' => $linkEntity->getId(),
 		]);
 
 		if (strlen($link) > Application::MAX_GENERATED_LINK_LENGTH) {
+			$this->linkMapper->delete($linkEntity);
 			throw new Exception('link_too_long');
-		}
-
-		try {
-			$linkEntity = $this->linkMapper->findBySignature($signature);
-			// if it exists, mark the link as not done
-			$linkEntity->setDoneAt(null);
-			$this->linkMapper->update($linkEntity);
-		} catch (DoesNotExistException $e) {
-			// if it does not exist, create it
-			$linkEntity = new Link();
-			$linkEntity->setCreatedAt(time());
-			$linkEntity->setUserId($userId ?? '');
-			$linkEntity->setSignature($signature);
-			$this->linkMapper->insert($linkEntity);
 		}
 
 		return $link;
@@ -112,18 +109,22 @@ class ApiService {
 	 * @param string $rejectCallbackUri
 	 * @param string $description
 	 * @param string $signature
+	 * @param int|null $id
 	 * @return array
+	 * @throws MultipleObjectsReturnedException
 	 * @throws SignatureException
 	 * @throws Throwable
 	 */
 	public function approve(
-		string $approveCallbackUri, string $rejectCallbackUri, string $description, string $signature,
+		string $approveCallbackUri, string $rejectCallbackUri, string $description, string $signature, ?int $id = null,
 	): array {
-		if (!$this->checkSignature($approveCallbackUri, $rejectCallbackUri, $description, $signature)) {
+		if (!$this->checkSignature($approveCallbackUri, $rejectCallbackUri, $description, $signature, $id)) {
 			throw new SignatureException();
 		}
-		$this->checkDoneAt($signature);
-		$this->setDoneAt($signature);
+		if ($id !== null) {
+			$this->checkDoneAt($id);
+			$this->setDoneAt($id);
+		}
 		return $this->request($approveCallbackUri);
 	}
 
@@ -132,53 +133,57 @@ class ApiService {
 	 * @param string $rejectCallbackUri
 	 * @param string $description
 	 * @param string $signature
+	 * @param int|null $id
 	 * @return array
+	 * @throws MultipleObjectsReturnedException
 	 * @throws SignatureException
 	 * @throws Throwable
 	 */
 	public function reject(
-		string $approveCallbackUri, string $rejectCallbackUri, string $description, string $signature,
+		string $approveCallbackUri, string $rejectCallbackUri, string $description, string $signature, ?int $id = null,
 	): array {
-		if (!$this->checkSignature($approveCallbackUri, $rejectCallbackUri, $description, $signature)) {
+		if (!$this->checkSignature($approveCallbackUri, $rejectCallbackUri, $description, $signature, $id)) {
 			throw new SignatureException();
 		}
-		$this->checkDoneAt($signature);
-		$this->setDoneAt($signature);
+		if ($id !== null) {
+			$this->checkDoneAt($id);
+			$this->setDoneAt($id);
+		}
 		return $this->request($rejectCallbackUri);
 	}
 
 	/**
 	 * Raise an exception if the link has already been done
-	 * If the link does not exist, it might have been created before we started storing them
 	 *
-	 * @param string $signature
+	 * @param int $id
 	 * @return void
-	 * @throws Exception
+	 * @throws MultipleObjectsReturnedException
+	 * @throws \OCP\DB\Exception
 	 */
-	private function checkDoneAt(string $signature): void {
+	public function checkDoneAt(int $id): void {
 		try {
-			$linkEntity = $this->linkMapper->findBySignature($signature);
+			$linkEntity = $this->linkMapper->findById($id);
 			if ($linkEntity->getDoneAt() !== null) {
-				throw new Exception('link_already_done');
+				throw new Exception('link_already_done', Http::STATUS_CONFLICT);
 			}
-		} catch (MultipleObjectsReturnedException $e) {
-			// this should not happen, we prevent creating multiple links with the same signature
-			throw $e;
 		} catch (DoesNotExistException $e) {
-			// the link does not exist, all good, it might have been created before we started storing them
+			throw new Exception('link_not_found', Http::STATUS_NOT_FOUND);
 		}
 	}
 
-	private function setDoneAt(string $signature): void {
+	/**
+	 * @param int $id
+	 * @return void
+	 * @throws MultipleObjectsReturnedException
+	 * @throws \OCP\DB\Exception
+	 */
+	private function setDoneAt(int $id): void {
 		try {
-			$linkEntity = $this->linkMapper->findBySignature($signature);
+			$linkEntity = $this->linkMapper->findById($id);
 			$linkEntity->setDoneAt(time());
 			$this->linkMapper->update($linkEntity);
-		} catch (MultipleObjectsReturnedException $e) {
-			// this should not happen, we prevent creating multiple links with the same signature
-			throw $e;
 		} catch (DoesNotExistException $e) {
-			// the link does not exist, all good, it might have been created before we started storing them
+			throw new Exception('link_not_found', Http::STATUS_NOT_FOUND);
 		}
 	}
 

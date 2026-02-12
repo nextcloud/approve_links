@@ -107,6 +107,7 @@ export default {
 		rejectCallbackUri() { return this.urlParams.get('rejectCallbackUri') },
 		description() { return this.urlParams.get('description') },
 		signature() { return this.urlParams.get('signature') },
+		id() { return this.urlParams.get('id') },
 	},
 
 	mounted() {
@@ -123,6 +124,9 @@ export default {
 				rejectCallbackUri: this.rejectCallbackUri,
 				description: this.description,
 				signature: this.signature,
+			}
+			if (this.id) {
+				params.id = parseInt(this.id)
 			}
 			const url = generateOcsUrl('/apps/approve_links/api/v1/approve')
 			axios.post(url, params).then(response => {
@@ -146,6 +150,9 @@ export default {
 				rejectCallbackUri: this.rejectCallbackUri,
 				description: this.description,
 				signature: this.signature,
+			}
+			if (this.id) {
+				params.id = parseInt(this.id)
 			}
 			const url = generateOcsUrl('/apps/approve_links/api/v1/reject')
 			axios.post(url, params).then(response => {

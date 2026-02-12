@@ -82,6 +82,7 @@ class ApiController extends OCSController {
 	 * @param string $rejectCallbackUri The URI to request on rejection
 	 * @param string $description The approval description
 	 * @param string $signature The approval link signature
+	 * @param int|null $id The approval link id, it can be null for old links
 	 * @return DataResponse<Http::STATUS_OK, array{result: array{body: string}}, array{}>|DataResponse<Http::STATUS_BAD_REQUEST|Http::STATUS_UNAUTHORIZED, array{error: string, message: string}, array{}>
 	 * @throws \Throwable
 	 *
@@ -94,9 +95,11 @@ class ApiController extends OCSController {
 	#[PublicPage]
 	#[BruteForceProtection(action: 'approveLink')]
 	#[OpenAPI(scope: OpenAPI::SCOPE_DEFAULT, tags: ['api'])]
-	public function approve(string $approveCallbackUri, string $rejectCallbackUri, string $description, string $signature): DataResponse {
+	public function approve(
+		string $approveCallbackUri, string $rejectCallbackUri, string $description, string $signature, ?int $id = null,
+	): DataResponse {
 		try {
-			$approveResult = $this->apiService->approve($approveCallbackUri, $rejectCallbackUri, $description, $signature);
+			$approveResult = $this->apiService->approve($approveCallbackUri, $rejectCallbackUri, $description, $signature, $id);
 			$responseData = [
 				'result' => $approveResult,
 			];
@@ -119,6 +122,7 @@ class ApiController extends OCSController {
 	 * @param string $rejectCallbackUri The URI to request on rejection
 	 * @param string $description The approval description
 	 * @param string $signature The approval link signature
+	 * @param int|null $id The approval link id, it can be null for old links
 	 * @return DataResponse<Http::STATUS_OK, array{result: array{body: string}}, array{}>|DataResponse<Http::STATUS_BAD_REQUEST|Http::STATUS_UNAUTHORIZED, array{error: string, message: string}, array{}>
 	 * @throws \Throwable
 	 *
@@ -131,9 +135,11 @@ class ApiController extends OCSController {
 	#[PublicPage]
 	#[BruteForceProtection(action: 'rejectLink')]
 	#[OpenAPI(scope: OpenAPI::SCOPE_DEFAULT, tags: ['api'])]
-	public function reject(string $approveCallbackUri, string $rejectCallbackUri, string $description, string $signature): DataResponse {
+	public function reject(
+		string $approveCallbackUri, string $rejectCallbackUri, string $description, string $signature, ?int $id = null,
+	): DataResponse {
 		try {
-			$rejectResult = $this->apiService->reject($approveCallbackUri, $rejectCallbackUri, $description, $signature);
+			$rejectResult = $this->apiService->reject($approveCallbackUri, $rejectCallbackUri, $description, $signature, $id);
 			$responseData = [
 				'result' => $rejectResult,
 			];
