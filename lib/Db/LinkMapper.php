@@ -36,4 +36,16 @@ class LinkMapper extends QBMapper {
 
 		return $this->findEntity($qb);
 	}
+
+	/**
+	 * @param int $timestamp
+	 * @return void
+	 * @throws Exception
+	 */
+	public function cleanUpLinksCreatedBefore(int $timestamp): void {
+		$qb = $this->db->getQueryBuilder();
+		$qb->delete($this->getTableName())
+			->where($qb->expr()->lt('created_at', $qb->createNamedParameter($timestamp, IQueryBuilder::PARAM_INT)));
+		$qb->executeStatement();
+	}
 }

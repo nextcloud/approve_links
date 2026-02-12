@@ -22,4 +22,7 @@
 	<settings>
 		<admin>OCA\ApproveLinks\Settings\Admin</admin>
 	</settings>
+	<background-jobs>
+		<job>OCA\ApproveLinks\Cron\CleanupLinks</job>
+	</background-jobs>
 </info>
