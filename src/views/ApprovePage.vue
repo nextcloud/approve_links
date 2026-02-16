@@ -107,6 +107,7 @@ export default {
 		rejectCallbackUri() { return this.urlParams.get('rejectCallbackUri') },
 		description() { return this.urlParams.get('description') },
 		signature() { return this.urlParams.get('signature') },
+		id() { return this.urlParams.get('id') },
 	},
 
 	mounted() {
@@ -124,6 +125,9 @@ export default {
 				description: this.description,
 				signature: this.signature,
 			}
+			if (this.id) {
+				params.id = parseInt(this.id)
+			}
 			const url = generateOcsUrl('/apps/approve_links/api/v1/approve')
 			axios.post(url, params).then(response => {
 				showSuccess(t('approve_links', 'Thank you for your decision.'))
@@ -134,6 +138,10 @@ export default {
 					showError(t('approve_links', 'The request to the approve callback URI failed'))
 				} else if (error.response.status === 401) {
 					showError(t('approve_links', 'Bad signature'))
+				} else if (error.response.status === 404) {
+					showError(t('approve_links', 'Unknown link'))
+				} else if (error.response.status === 409) {
+					showError(t('approve_links', 'This link has already been approved or rejected'))
 				}
 			}).then(() => {
 				this.approveLoading = false
@@ -147,6 +155,9 @@ export default {
 				description: this.description,
 				signature: this.signature,
 			}
+			if (this.id) {
+				params.id = parseInt(this.id)
+			}
 			const url = generateOcsUrl('/apps/approve_links/api/v1/reject')
 			axios.post(url, params).then(response => {
 				showSuccess(t('approve_links', 'Thank you for your decision.'))
@@ -157,6 +168,10 @@ export default {
 					showError(t('approve_links', 'The request to the reject callback URI failed'))
 				} else if (error.response.status === 401) {
 					showError(t('approve_links', 'Bad signature'))
+				} else if (error.response.status === 404) {
+					showError(t('approve_links', 'Unknown link'))
+				} else if (error.response.status === 409) {
+					showError(t('approve_links', 'This link has already been approved or rejected'))
 				}
 			}).then(() => {
 				this.rejectLoading = false

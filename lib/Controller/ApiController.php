@@ -13,7 +13,6 @@
 namespace OCA\ApproveLinks\Controller;
 
 use Exception;
-use OCA\ApproveLinks\AppInfo\Application;
 use OCA\ApproveLinks\Service\ApiService;
 use OCA\ApproveLinks\Settings\Admin;
 use OCA\ApproveLinks\SignatureException;
@@ -35,6 +34,7 @@ class ApiController extends OCSController {
 		string $appName,
 		IRequest $request,
 		private ApiService $apiService,
+		private ?string $userId,
 	) {
 		parent::__construct($appName, $request);
 	}
@@ -56,10 +56,11 @@ class ApiController extends OCSController {
 	#[AuthorizedAdminSetting(settings: Admin::class)]
 	#[OpenAPI(scope: OpenAPI::SCOPE_DEFAULT, tags: ['api'])]
 	public function generateLink(string $approveCallbackUri, string $rejectCallbackUri, string $description): DataResponse {
-		$link = $this->apiService->generateLink($approveCallbackUri, $rejectCallbackUri, $description);
-		if (strlen($link) > Application::MAX_GENERATED_LINK_LENGTH) {
+		try {
+			$link = $this->apiService->generateLink($approveCallbackUri, $rejectCallbackUri, $description, $this->userId);
+		} catch (Exception $e) {
 			$responseData = [
-				'error' => 'link_too_long',
+				'error' => $e->getMessage(),
 			];
 			return new DataResponse($responseData, Http::STATUS_BAD_REQUEST);
 		}
@@ -80,21 +81,26 @@ class ApiController extends OCSController {
 	 * @param string $rejectCallbackUri The URI to request on rejection
 	 * @param string $description The approval description
 	 * @param string $signature The approval link signature
-	 * @return DataResponse<Http::STATUS_OK, array{result: array{body: string}}, array{}>|DataResponse<Http::STATUS_BAD_REQUEST|Http::STATUS_UNAUTHORIZED, array{error: string, message: string}, array{}>
+	 * @param int|null $id The approval link id, it can be null for old links
+	 * @return DataResponse<Http::STATUS_OK, array{result: array{body: string}}, array{}>|DataResponse<Http::STATUS_BAD_REQUEST|Http::STATUS_UNAUTHORIZED|Http::STATUS_CONFLICT|Http::STATUS_NOT_FOUND, array{error: string, message: string}, array{}>
 	 * @throws \Throwable
 	 *
 	 * 200: The callback URI has been successfully requested
 	 * 401: The signature is incorrect
 	 * 400: There was an error while approving
+	 * 404: The link was not found
+	 * 409: The link was used already
 	 */
 	#[NoCSRFRequired]
 	#[NoAdminRequired]
 	#[PublicPage]
 	#[BruteForceProtection(action: 'approveLink')]
 	#[OpenAPI(scope: OpenAPI::SCOPE_DEFAULT, tags: ['api'])]
-	public function approve(string $approveCallbackUri, string $rejectCallbackUri, string $description, string $signature): DataResponse {
+	public function approve(
+		string $approveCallbackUri, string $rejectCallbackUri, string $description, string $signature, ?int $id = null,
+	): DataResponse {
 		try {
-			$approveResult = $this->apiService->approve($approveCallbackUri, $rejectCallbackUri, $description, $signature);
+			$approveResult = $this->apiService->approve($approveCallbackUri, $rejectCallbackUri, $description, $signature, $id);
 			$responseData = [
 				'result' => $approveResult,
 			];
@@ -104,7 +110,11 @@ class ApiController extends OCSController {
 			$response->throttle(['reason' => 'bad signature']);
 			return $response;
 		} catch (Exception $e) {
-			return new DataResponse(['error' => 'unknown', 'message' => $e->getMessage()], Http::STATUS_BAD_REQUEST);
+			$responseCode = $e->getCode();
+			if ($responseCode !== Http::STATUS_NOT_FOUND && $responseCode !== Http::STATUS_CONFLICT) {
+				$responseCode = Http::STATUS_BAD_REQUEST;
+			}
+			return new DataResponse(['message' => $e->getMessage()], $responseCode);
 		}
 	}
 
@@ -117,21 +127,26 @@ class ApiController extends OCSController {
 	 * @param string $rejectCallbackUri The URI to request on rejection
 	 * @param string $description The approval description
 	 * @param string $signature The approval link signature
-	 * @return DataResponse<Http::STATUS_OK, array{result: array{body: string}}, array{}>|DataResponse<Http::STATUS_BAD_REQUEST|Http::STATUS_UNAUTHORIZED, array{error: string, message: string}, array{}>
+	 * @param int|null $id The approval link id, it can be null for old links
+	 * @return DataResponse<Http::STATUS_OK, array{result: array{body: string}}, array{}>|DataResponse<Http::STATUS_BAD_REQUEST|Http::STATUS_UNAUTHORIZED|Http::STATUS_CONFLICT|Http::STATUS_NOT_FOUND, array{error: string, message: string}, array{}>
 	 * @throws \Throwable
 	 *
 	 * 200: The callback URI has been successfully requested
 	 * 401: The signature is incorrect
 	 * 400: There was an error while rejecting
+	 * 404: The link was not found
+	 * 409: The link was used already
 	 */
 	#[NoCSRFRequired]
 	#[NoAdminRequired]
 	#[PublicPage]
 	#[BruteForceProtection(action: 'rejectLink')]
 	#[OpenAPI(scope: OpenAPI::SCOPE_DEFAULT, tags: ['api'])]
-	public function reject(string $approveCallbackUri, string $rejectCallbackUri, string $description, string $signature): DataResponse {
+	public function reject(
+		string $approveCallbackUri, string $rejectCallbackUri, string $description, string $signature, ?int $id = null,
+	): DataResponse {
 		try {
-			$rejectResult = $this->apiService->reject($approveCallbackUri, $rejectCallbackUri, $description, $signature);
+			$rejectResult = $this->apiService->reject($approveCallbackUri, $rejectCallbackUri, $description, $signature, $id);
 			$responseData = [
 				'result' => $rejectResult,
 			];
@@ -141,7 +156,11 @@ class ApiController extends OCSController {
 			$response->throttle(['reason' => 'bad signature']);
 			return $response;
 		} catch (Exception $e) {
-			return new DataResponse(['error' => 'unknown', 'message' => $e->getMessage()], Http::STATUS_BAD_REQUEST);
+			$responseCode = $e->getCode();
+			if ($responseCode !== Http::STATUS_NOT_FOUND && $responseCode !== Http::STATUS_CONFLICT) {
+				$responseCode = Http::STATUS_BAD_REQUEST;
+			}
+			return new DataResponse(['message' => $e->getMessage()], $responseCode);
 		}
 	}
 }
