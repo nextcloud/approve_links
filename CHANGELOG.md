@@ -6,6 +6,17 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+## 1.4.0 – 2026-03-26
+
+### Added
+
+- Track generated links by ID and usage state, reject reused links, clean up stale links, and improve related tests and error messages (@julien-nc, #31)
+
+### Changed
+
+- Raise the minimum supported PHP and Nextcloud versions, switch Psalm packaging for PHP 8.5 compatibility, and refresh npm dependencies (@julien-nc, #30)
+- Remove the unused config controller and routes, and refresh composer and npm dependencies (@julien-nc)
+
 ## 1.3.0 – 2025-11-03
 
 ### Added
